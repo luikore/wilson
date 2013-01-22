@@ -1128,14 +1128,16 @@ end # module Wilson
 require 'rbconfig'
 
 module Ruby
-  extend DL::Importable
-
-  typealias "VALUE", "unsigned long", proc { |v| v.object_id << 1 }
+  if RUBY_VERSION < '1.9'
+    extend DL::Importable
+  else
+    extend DL::Importer
+  end
 
   dir = File.join(Config::CONFIG["prefix"], (RUBY_PLATFORM =~ /mswin|mingw/ ? "bin" : "lib"))
   dlload File.join(dir, Config::CONFIG['LIBRUBY_SO'])
 
-  extern "void rb_define_method(VALUE, char*, void*, int)"
+  extern "void rb_define_method(unsigned long, char*, void*, int)"
 end
 
 class Integer
@@ -1177,10 +1179,9 @@ ASM = []
 class Module
   def defasm name, *args, &block
     code = assemble(args.size, &block)
-    ptr  = code.to_ptr
 
-    ASM << ptr
-    Ruby.rb_define_method self, name.to_s, ptr, args.size
+    ASM << code
+    Ruby.rb_define_method (self.object_id << 1), name.to_s, code, args.size
   end
 end
 
@@ -1223,7 +1224,7 @@ class Object
 
   @@asm = {}
   def asm(name, *args, &block)
-    code = @@asm[name] ||= assemble(&block).to_ptr
+    code = @@asm[name] ||= (RUBY_VERSION < '1.9' ? assemble(&block).to_ptr : DL::CPtr[assemble(&block)])
 
     return execute_asm(code) # code is the function pointer, wrapped
   end
