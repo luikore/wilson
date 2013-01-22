@@ -1134,8 +1134,8 @@ module Ruby
     extend DL::Importer
   end
 
-  dir = File.join(Config::CONFIG["prefix"], (RUBY_PLATFORM =~ /mswin|mingw/ ? "bin" : "lib"))
-  dlload File.join(dir, Config::CONFIG['LIBRUBY_SO'])
+  dir = File.join(RbConfig::CONFIG["prefix"], (RUBY_PLATFORM =~ /mswin|mingw/ ? "bin" : "lib"))
+  dlload File.join(dir, RbConfig::CONFIG['LIBRUBY_SO'])
 
   extern "void rb_define_method(unsigned long, char*, void*, int)"
 end
