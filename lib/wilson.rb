@@ -1132,8 +1132,8 @@ module Ruby
 
   typealias "VALUE", "unsigned long", proc { |v| v.object_id << 1 }
 
-  dir = File.join(Config::CONFIG["prefix"], "lib")
-  dlload File.join(dir, "libruby.dylib")
+  dir = File.join(Config::CONFIG["prefix"], (RUBY_PLATFORM =~ /mswin|mingw/ ? "bin" : "lib"))
+  dlload File.join(dir, Config::CONFIG['LIBRUBY_SO'])
 
   extern "void rb_define_method(VALUE, char*, void*, int)"
 end
